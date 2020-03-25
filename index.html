@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>All apples: An apple for the thirst, The colored apples and Disappearing apples</title>
+
+</head>
+
+<body>
+
+  <script src="https://d3js.org/d3.v5.min.js"></script>
+  <script src="js/script.js"></script>
+
+
+
+  <script>
+
+    //https://www.d3indepth.com/scales/#scalesequential
+
+    // Array 20 objecten met x (tussen 0 en 100), y (tussen 0 en 100) en r (tussen 1 en 15)
+
+    const data = [];
+    for (i = 0; i < 20; i++) {
+      data.push({
+        x: Math.floor(Math.random() * 100) + 1,
+        y: Math.floor(Math.random() * 100) + 1,
+        r: Math.floor(Math.random() * 15) + 1
+      });
+    }
+
+    // SVG, hoogte. margin en breedte eigenschappen
+
+    const margin = {
+      top: 20,
+      bottom: 20,
+      left: 20,
+      right: 20
+    }
+
+
+      svgWidth = 600,
+      svgHeight = 600,
+      width = svgWidth - margin.left - margin.right,
+      height = svgHeight - margin.top - margin.bottom;
+
+    
+      // x- en y-as
+
+    const xScale = d3.scaleLinear()
+      .domain([d3.min(data.map(d => d.x)), d3.max(data.map(d => d.x))])
+      .range([0, width]);
+
+    const yScale = d3.scaleLinear()
+      .domain([d3.min(data.map(d => d.y)), d3.max(data.map(d => d.y))])
+      .range([0, height]);
+
+
+    // Kleuren van de cirkels
+
+    var sequentialScale = d3.scaleSequential()
+      .domain([d3.min(data.map(d => d.r)), d3.max(data.map(d => d.r))])
+      .interpolator(d3.interpolateMagma);
+
+
+    // Maken van de SVG, container voor de x- en y-as en gegevenscontainer 
+
+    const svg = d3.select('body')
+      .append('svg')
+      .attr('width', svgWidth)
+      .attr('height', svgHeight);
+
+    const axisContainer = svg.append("g")
+      .attr('transform', `translate(${margin.left},${margin.top})`);
+
+    axisContainer.append('g')
+      .attr('transform', `translate(0,${height})`)
+      .call(d3.axisBottom(xScale));
+
+    const dataContainer = axisContainer.append('g')
+      .attr('id', 'data-container');
+
+
+
+    // Tekenen en inkleuren van de cirkels/appels en verwijderen van appels onclick
+    let update = dataContainer.selectAll('g').data(data).enter().append('g')
+      .attr('id', 'data-point');
+
+    update.append('circle')
+      .attr('cx', (d) => xScale(d.x))
+      .attr('cy', (d) => yScale(d.y))
+      .attr('r', (d) => d.r)
+      .attr('fill', (d) => sequentialScale(d.r))
+      .style('cursor', 'pointer')
+      .on('click', removeApple);
+
+
+    //  Tekst (radius) plaatsen in het midden
+    update.append('text')
+      .text((d) => `${d.r}`)
+      .style('user-select', "none")
+      .style('pointer-events', "none") // deze uitzetten om enkel de cirkel te laten verdwijnen wanneer op de cirkel wordt geklikt en NIET op het getal!
+      .attr('text-anchor', "middle")
+      .attr('alignment-baseline', "middle")
+      .attr('x', (d) => xScale(d.x))
+      .attr('y', (d) => yScale(d.y));
+
+
+
+    // Functie voor verwijderen van de cirkels/appels
+
+    function removeApple() {
+      console.log(this.parentNode);
+      this.parentNode.remove();
+    }
+
+
+
+  </script>
+
+</body>
+
+</html>
